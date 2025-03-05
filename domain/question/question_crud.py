@@ -10,7 +10,7 @@ def get_question_list(db: Session, skip: int = 0, limit: int = 10):
 
     total = _question_list.count()
     question_list = _question_list.offset(skip).limit(limit).all()
-    return question_list
+    return total, question_list
 
 def get_question_detail(db: Session, question_id: int):
     question = db.query(Question).get(question_id)
