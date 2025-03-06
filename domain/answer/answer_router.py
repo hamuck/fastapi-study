@@ -5,6 +5,8 @@ from starlette import status
 from database import get_db
 from domain.answer import answer_schema, answer_crud
 from domain.question import question_crud
+from domain.user.user_router import get_crurrent_user
+from models import User
 
 
 router = APIRouter(
@@ -15,8 +17,9 @@ router = APIRouter(
 @router.post("/create/{question_id}", status_code=status.HTTP_204_NO_CONTENT)
 def answer_create(question_id: int,
                   _answer_create: answer_schema.AnswerCreate,
-                  db: Session = Depends(get_db)):
+                  db: Session = Depends(get_db),
+                  currnet_user: User = Depends(get_crurrent_user)):
     question = question_crud.get_question_detail(db, question_id=question_id)
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")
-    answer_crud.create_answer(db, question=question, answer_create=_answer_create)
+    answer_crud.create_answer(db, question=question, answer_create=_answer_create, user=currnet_user)

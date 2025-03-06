@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, HTTPException
 from fastapi import Depends
-from fastapi.security import OAuth2PasswordRequestForm
-from jose import jwt
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from starlette import status
 
@@ -14,6 +14,7 @@ from domain.user.user_crud import pwd_context
 ACCESS_TOEKN_EXPIRE_MINUTES = 60 * 24
 SECRET_KEY = "29870a908b17e8ca80235b5ca097344df4e313fc4df40f1c25696a67c10a749e"
 ALGOTITHM = "HS256"
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login")
 
 router = APIRouter(
     prefix="/api/user"
@@ -47,3 +48,22 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
         "token_type": "bearer",
         "username": user.username
     }
+
+def get_crurrent_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED, 
+        detail="Colud not vaildate credentials", 
+        headers={"WWW-Authenticate": "Bearer"}
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGOTITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    else:
+        user = user_crud.get_user(db, username=username)
+        if user is None:
+            raise credentials_exception
+        return user
