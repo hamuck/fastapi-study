@@ -2,8 +2,12 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from domain.answer.answer_schema import AnswerCreate
+from domain.answer.answer_schema import AnswerCreate, AnswerUpdate
 from models import Question, Answer, User
+
+def get_answer(db: Session, answer_id: int):
+    answer = db.query(Question).get(answer_id)
+    return answer
 
 def create_answer(db: Session, question: Question, answer_create: AnswerCreate, user: User):
     db_answer = Answer(question=question,
@@ -11,4 +15,14 @@ def create_answer(db: Session, question: Question, answer_create: AnswerCreate, 
                        create_date=datetime.now(),
                        user=user)
     db.add(db_answer)
+    db.commit()
+
+def update_answer(db: Session, db_answer: Answer, answer_update: AnswerUpdate):
+    db_answer.content = answer_update.content
+    db_answer.modify_date = datetime.now()
+    db.add(db_answer)
+    db.commit()
+
+def delete_answer(db: Session, db_answer: Answer):
+    db.delete(delete_answer)
     db.commit()
