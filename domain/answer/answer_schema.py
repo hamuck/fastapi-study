@@ -16,9 +16,13 @@ class Answer(BaseModel):
     content: str
     create_date: datetime.datetime
     user: User | None
+    voter: list[User] = []
 
 class AnswerUpdate(AnswerCreate):
     answer_id: int
 
 class AnswerDelete(BaseModel):
+    answer_id: int
+
+class AnswerVote(BaseModel):
     answer_id: int

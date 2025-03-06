@@ -1,6 +1,20 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from database import Base
+
+question_voter = Table(
+    'answer_voter',
+    Base.metadata,
+    Column('user_id', Integer, ForeignKey('user.id'), primary_key=True),
+    Column('answer_id',Integer, ForeignKey('answer.id'),primary_key=True)
+)
+
+answer_voter = Table(
+    'question_voter',
+    Base.metadata,
+    Column('user_id', Integer, ForeignKey('user.id'), primary_key=True),
+    Column('question_id',Integer, ForeignKey('question.id'),primary_key=True)
+)
 
 
 class Question(Base):
@@ -13,6 +27,7 @@ class Question(Base):
     modify_date = Column(DateTime, nullable=True)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     user = relationship("User", backref="question_users")
+    voter = relationship('User', secondary=question_voter, backref='question_voter')
 
 
 class Answer(Base):
@@ -26,6 +41,7 @@ class Answer(Base):
     question = relationship("Question", backref="answers")
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     user = relationship("User", backref="answer_users")
+    voter = relationship('User', secondary=answer_voter, backref='answer_votes')
 
 class User(Base):
     __tablename__ = "user"
@@ -34,3 +50,4 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     password = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
+
